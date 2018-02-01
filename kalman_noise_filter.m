@@ -1,4 +1,5 @@
 function betterdata = kalman_noise_filter(inputData, varargin)
+%this is a github test
 if length(varargin) < 1
     intensity = 1;
 else
