@@ -1,6 +1,6 @@
 function model = kalmanRW(X,r,param)
     
-    if nargin < 4; param = KTD_defparam; end
+    if nargin < 3; param = KTD_defparam; end
     
     % initialization
     [N,D] = size(X);

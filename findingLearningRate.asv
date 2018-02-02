@@ -20,17 +20,16 @@ lastCorr = 0;
 yeetcounter = 0;
 num = 2;
 value = zeros(2,n);
-
 totalCorr = 0;
 rewards = [AR.allTrials.ReinforcementOutcome.before AR.allTrials.ReinforcementOutcome.after];
 valves = [AR.allTrials.OdorValveIndex.before AR.allTrials.OdorValveIndex.after];
+corrs = zeros(num,1);
 corrdata = zeros(num,n);
-ensureFigure('Correlation',1);
+ensureFigure('Test',1);
 hold on;
 % for lr = [1 100]
-lr = .3;
-corrs = zeros(length(lr),1);
-for lrc = 1:length(lr)
+lr = [0 100];
+for lrc = ((0:1) * 100) + 1
     totalCorr = 0;
     for reversal = 1:n
         data = mainDataPlus(reversal,:);
@@ -55,11 +54,10 @@ for lrc = 1:length(lr)
     
         param.q = 0.01;
 
-        param.s = lr(1,lrc);
+        param.s = lrc;
          
         param.q = 0.01;
-        param.std = 1;
-        param.lr = lr(1,lrc);
+  
         model = kalmanRW(X,reward,param);    
         rhat = zeros(n,1); % Predicted reward
         pe = zeros(numTrials,1); % prediction error
@@ -78,11 +76,8 @@ for lrc = 1:length(lr)
            value(1,counter) = X(counter,:) * (model(counter).w0 * 2);   
         end
         xs = (1:numTrials) - size(AR.csMinus.csLicks.before,2);
-        if(reversal == 2)
-            %plot(xs, value'); 
-            %plot(xs(data ~= 0 & ~isnan(data)),data(data ~= 0 & ~isnan(data)));
-        end
-        
+        %plot(xs, value'); 
+        %plot(xs(data ~= 0 & ~isnan(data)),data(data ~= 0 & ~isnan(data)));
         currentCorr  = corr(value(~isnan(data) & data ~= 0)',data(~isnan(data) & data ~= 0)');
         corrdata(lrc,reversal) = currentCorr;
         totalCorr = totalCorr + currentCorr;
@@ -91,10 +86,10 @@ for lrc = 1:length(lr)
     
     
 end
-plot(lr,corrs);
+   
 
 
-hold off;
+
 
 
 %{
