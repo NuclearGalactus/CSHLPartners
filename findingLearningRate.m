@@ -28,9 +28,11 @@ corrdata = zeros(num,n);
 ensureFigure('Correlation',1);
 hold on;
 % for lr = [1 100]
-lr = .3;
+
+lr = [.3 .6];
 corrs = zeros(length(lr),1);
 for lrc = 1:length(lr)
+    zscores = zeros(n,200);
     totalCorr = 0;
     for reversal = 1:n
         data = mainDataPlus(reversal,:);
@@ -78,17 +80,19 @@ for lrc = 1:length(lr)
            value(1,counter) = X(counter,:) * (model(counter).w0 * 2);   
         end
         xs = (1:numTrials) - size(AR.csMinus.csLicks.before,2);
-        if(reversal == 2)
-            %plot(xs, value'); 
-            %plot(xs(data ~= 0 & ~isnan(data)),data(data ~= 0 & ~isnan(data)));
+        z = (zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2;
+        zscores(reversal) = z(((1:201) - 101) + (size(AR.allTrials.csLicks.before,2) -notnans(1)));
+        if(lrc == 1)
+            plot((zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2, 'Color', 'g');
+        elseif(lrc == 2)
+            plot((zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2, 'Color', 'r');
         end
-        
-        currentCorr  = corr(value(~isnan(data) & data ~= 0)',data(~isnan(data) & data ~= 0)');
+        currentdiff  = corr(value(~isnan(data) & data ~= 0)',data(~isnan(data) & data ~= 0)');
         corrdata(lrc,reversal) = currentCorr;
         totalCorr = totalCorr + currentCorr;
     end
     corrs(lrc) = totalCorr / n;
-    
+    plot(mean(zscores));
     
 end
 plot(lr,corrs);
