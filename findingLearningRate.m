@@ -71,14 +71,16 @@ for lrc = 1:length(lr)
         end
         models(reversal,notnans(1):notnans(end)) = value;
     end
-    corrs(lrc) = corr(zscore(nanmean((models(:,viewRange + reversalPoint))))', zscore(nanmean(mainData(:,viewRange + reversalPoint)))');
+    plotModel = zscore(nanmean((models(:,viewRange + reversalPoint))));
+    plotData = zscore(nanmean(mainData(:,viewRange + reversalPoint)));
+    corrs(lrc) = corr(plotModel', plotData');
     subplot(2,1,1);
     hold on;
-    plot(viewRange, (zscore(nanmean((models(:,viewRange + reversalPoint)))) - zscore(nanmean(mainData(:,viewRange + reversalPoint)))).^2,'Color',cmap((ceil((lrc/length(lr)) * 64)),:));
+    plot(viewRange, (plotModel - plotData).^2,'Color',cmap((ceil((lrc/length(lr)) * 64)),:));
     hold off;
     subplot(2,1,2);
     hold on;
-    plot(viewRange,zscore(nanmean((models(:,viewRange + reversalPoint)))), 'Color',cmap((ceil((lrc/length(lr)) * 64)),:),'LineWidth',.8);
+    plot(viewRange,plotModel, 'Color',cmap((ceil((lrc/length(lr)) * 64)),:),'LineWidth',.8);
     hold off;
     axis([-viewBefore viewAfter -2 2]);
 end
@@ -87,7 +89,7 @@ end
 
 subplot(2,1,2);
 hold on;
-plot(viewRange,zscore(nanmean(mainData(:,viewRange + reversalPoint))), 'Color','g','LineWidth',.8);
+plot(viewRange,plotData, 'Color','g','LineWidth',.8);
 hold off;
 
 
