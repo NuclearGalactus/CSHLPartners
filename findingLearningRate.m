@@ -29,10 +29,13 @@ ensureFigure('Correlation',1);
 hold on;
 % for lr = [1 100]
 
-lr = linspace(0,1,10);
-zdata = zeros(n,length(lr));
+%lr = linspace(0,1,10);
+lr = [0.01 1];
+zdata = zeros(n,100);
 corrs = zeros(length(lr),1);
 for lrc = 1:length(lr)
+    datas = nan(n,200);
+    models = nan(n,200);
     zscores = zeros(n,200);
     totalCorr = 0;
     for reversal = 1:n
@@ -47,9 +50,9 @@ for lrc = 1:length(lr)
           if(rw(i) == "Reward")
                reward(i) = 1;
           elseif(rw(i) == "Punish")
-                reward(i) = .4;
+                reward(i) = -1;
           else
-             reward(i) = 0.5;
+             reward(i) = 0;
           end
         end
         X = zeros(numTrials,2);
@@ -80,10 +83,13 @@ for lrc = 1:length(lr)
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
            value(1,counter) = X(counter,:) * (model(counter).w0 * 2);   
         end
+        datas(reversal,find(~isnan(data) & data ~= 0) + isnan(1)) = data(~isnan(data) & data ~= 0);
+        models(reversal,find(~isnan(data) & data ~= 0) + isnan(1)) = value(~isnan(data) & data ~= 0);
+        
         xs = (1:numTrials) - size(AR.csMinus.csLicks.before,2);
         z = (zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2;
-        sum(z)
-        zdata(reversal,lrc) = sum(z);
+        ztemp = (nanzscore(datas(reversal,:)) - nanzscore(models(reversal,:))).^2;
+        zscores(reversal,find(~isnan(data) & data ~= 0)) = ztemp(~isnan(data) & data ~= 0);
         if(reversal == 1)
            % plot(find(~isnan(data) & data ~= 0),zscore(data(~isnan(data) & data ~= 0)),'Color','r');
            % plot(find(~isnan(data) & data ~= 0),zscore(value(~isnan(data) & data ~= 0)));
@@ -100,10 +106,11 @@ for lrc = 1:length(lr)
        % totalCorr = totalCorr + currentCorr;
     end
     corrs(lrc) = totalCorr / n;
-    %plot(mean(zscores));
+    mean(zscores)
+    plot((1:size(zscores,2)) - size(AR.allTrials.csLicks.before,2), (mean(zscores)));
     
 end
-plot(lr,mean(zdata));
+%plot(lr,mean(zdata));
 
 
 hold off;
