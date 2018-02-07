@@ -10,9 +10,12 @@ numCues = 2;
 %X = zeros(n,numCues); % stimuli matrix nTrials x 2,  
 %X(TE.OdorValveIndex == 1, 1) = .8;
 %X(TE.OdorValveIndex == 2, 2) = .8;
-mainDataPlus = [AR.allTrials.csLicks.before AR.allTrials.csLicks.after];
-mainDataMinus = [AR.allTrials.csLicks.before AR.csMinus.csLicks.after];
-n = size(mainDataPlus,1);
+firstHalf = AR.csPlus;
+secondHalf = AR.csMinus;
+mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
+reversalPoint = size(secondHalf.csLicks.before, 2);
+numTrials = size(mainData,2);
+n = size(mainData,1);
 trials = (1:n)';
 
 biggestCorr = 0;
@@ -22,44 +25,28 @@ num = 2;
 value = zeros(2,n);
 
 totalCorr = 0;
-rewards = [AR.allTrials.ReinforcementOutcome.before AR.allTrials.ReinforcementOutcome.after];
-valves = [AR.allTrials.OdorValveIndex.before AR.allTrials.OdorValveIndex.after];
+rewards = [firstHalf.ReinforcementOutcome.before secondHalf.ReinforcementOutcome.after];
+valves = [firstHalf.OdorValveIndex.before secondHalf.OdorValveIndex.after];
 corrdata = zeros(num,n);
 ensureFigure('Correlation',1);
-hold on;
 % for lr = [1 100]
 
-%lr = linspace(0,1,10);
-lr = [0.01 1];
+lr = linspace(0,1,10);
+%lr = [0.1 1];
 zdata = zeros(n,100);
 corrs = zeros(length(lr),1);
 for lrc = 1:length(lr)
-    datas = nan(n,200);
-    models = nan(n,200);
-    zscores = zeros(n,200);
+    datas = nan(n,numTrials);
+    models = nan(n,numTrials);
+    zscores = zeros(n,numTrials);
     totalCorr = 0;
     for reversal = 1:n
-        data = mainDataPlus(reversal,:);
+        data = mainData(reversal,:);
         notnans = find(~isnan(data));
         data = data(notnans(1):notnans(end));
         numTrials = length(data); 
-        rw = rewards(reversal,:);
-        rw = rw(notnans(1):notnans(end));
-        reward = zeros(numTrials,1);
-        for i = (1:numTrials)
-          if(rw(i) == "Reward")
-               reward(i) = 1;
-          elseif(rw(i) == "Punish")
-                reward(i) = -1;
-          else
-             reward(i) = 0;
-          end
-        end
-        X = zeros(numTrials,2);
-        X(valves(reversal,notnans(1):notnans(end)) == 1,1) = 1;
-        X(valves(reversal,notnans(1):notnans(end)) == 2,2) = 1;
-    
-        param.q = 0.01;
+        rw = rewar
+0.01;
 
         param.s = lr(1,lrc);
          
@@ -77,19 +64,19 @@ for lrc = 1:length(lr)
         for counter = 1:numTrials
            rhat(counter) = model(counter).rhat;
            pe(counter) = model(counter).dt;
-           w(:,counter) = model(counter).w0 * 2;
+           w(:,counter) = model(counter).w0;
            Kn(:,counter) = model(counter).K;
            offDiag(counter) = model(counter).C(2,1); % covariance matrix is symmetric so bottom left or top right corner of 2,2 matrix are equivalent
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
-           value(1,counter) = X(counter,:) * (model(counter).w0 * 2);   
+           value(1,counter) = X(counter,:) * (model(counter).w0);   
         end
-        datas(reversal,find(~isnan(data) & data ~= 0) + isnan(1)) = data(~isnan(data) & data ~= 0);
-        models(reversal,find(~isnan(data) & data ~= 0) + isnan(1)) = value(~isnan(data) & data ~= 0);
+        datas(reversal,find(~isnan(data) & data ~= 0) + notnans(1)) = data(~isnan(data) & data ~= 0);
+        models(reversal,notnans(1):notnans(end)) = value;
         
-        xs = (1:numTrials) - size(AR.csMinus.csLicks.before,2);
+        xs = (1:numTrials) - reversalPoint;
         z = (zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2;
-        ztemp = (nanzscore(datas(reversal,:)) - nanzscore(models(reversal,:))).^2;
-        zscores(reversal,find(~isnan(data) & data ~= 0)) = ztemp(~isnan(data) & data ~= 0);
+        %ztemp(reversal, ~isnan(datas(reversal,:)) & datas(reversal,:) ~= 0) = (nanzscore(datas(reversal,~isnan(datas(reversal,:)) & datas(reversal,:) ~= 0)) - nanzscore(models(reversal,~isnan(datas(reversal,:)) & datas(reversal,:) ~= 0))).^2;
+        %zscores(reversal,:) = ztemp;
         if(reversal == 1)
            % plot(find(~isnan(data) & data ~= 0),zscore(data(~isnan(data) & data ~= 0)),'Color','r');
            % plot(find(~isnan(data) & data ~= 0),zscore(value(~isnan(data) & data ~= 0)));
@@ -104,16 +91,23 @@ for lrc = 1:length(lr)
         %currentdiff  = corr(value(~isnan(data) & data ~= 0)',data(~isnan(data) & data ~= 0)');
         %corrdata(lrc,reversal) = currentCorr;
        % totalCorr = totalCorr + currentCorr;
+       
+       
+       
     end
     corrs(lrc) = totalCorr / n;
-    mean(zscores)
-    plot((1:size(zscores,2)) - size(AR.allTrials.csLicks.before,2), (mean(zscores)));
-    
+    subplot(2,1,1);
+    plot((1:size(zscores,2)) - reversalPoint, (mean(zscores)));
+    subplot(2,1,2);
+    hold on;
+ %   plot((1:51)-22,zscore(nanmean((models(:,(1:51) - 22 + reversalPoint)))), 'Color','r','LineWidth',.8);
+    plot((1:51)-22,zscore(nanmean(datas(:,(1:51) - 22 + reversalPoint))), 'Color','g','LineWidth',.8);
+    hold off;
+    axis([-20 30 -2 2]);
 end
 %plot(lr,mean(zdata));
 
 
-hold off;
 
 
 %{
