@@ -1,43 +1,27 @@
 %% finding learning rate with correlation
 load('AR.mat');
 param = KTD_defparam;
-rewardSize = .7;
-punishSize = .3;
-revFreq = 100; % block size (normal or reversed contingencies alternate) % number of trials
 numCues = 2;
 figure;
-
-%X = zeros(n,numCues); % stimuli matrix nTrials x 2,  
-%X(TE.OdorValveIndex == 1, 1) = .8;
-%X(TE.OdorValveIndex == 2, 2) = .8;
+%SET DATA SOURCES
 firstHalf = AR.csMinus;
 secondHalf = AR.csPlus;
 mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
 reversalPoint = size(secondHalf.csLicks.before, 2);
 numTrials = size(mainData,2);
+%number of reversals
 n = size(mainData,1);
-trials = (1:n)';
-
-biggestCorr = 0;
-lastCorr = 0;
-yeetcounter = 0;
-num = 2;
-value = zeros(2,n);
-
-totalCorr = 0;
 rewards = [firstHalf.ReinforcementOutcome.before secondHalf.ReinforcementOutcome.after];
 valves = [firstHalf.OdorValveIndex.before secondHalf.OdorValveIndex.after];
+%SET VIEW RANGES FOR GRAPH
 viewBefore = 20;
-viewAfter = 40;
-viewRange = (1:(viewAfter + viewBefore))-(viewBefore);
-corrdata = zeros(num,n);
+viewAfter = 20;
+viewRange = (1:(viewAfter + viewBefore + 1))-(viewBefore + 1);
 %ensureFigure('LearningRate',1);
-% for lr = [1 100]
 colormap jet;
 cmap = colormap;
-lr = linspace(0.05,1,19);
-%lr = [0.1 1];
-zdata = zeros(n,100);
+%SETUP LEARNING RATES
+lr = linspace(0.05,0.5,9);
 corrs = zeros(length(lr),1);
 for lrc = 1:length(lr)
     datas = nan(n,numTrials);
@@ -64,11 +48,7 @@ for lrc = 1:length(lr)
         X = zeros(numTrials,2);
         X(valves(reversal,notnans(1):notnans(end)) == 1,1) = 1;
         X(valves(reversal,notnans(1):notnans(end)) == 2,2) = 1;
-    
-        param.q = 0.01;
-
         param.s = lr(1,lrc);
-         
         param.q = 0.01;
         param.std = 1;
         param.lr = lr(1,lrc);
@@ -89,48 +69,26 @@ for lrc = 1:length(lr)
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
            value(1,counter) = X(counter,:) * (model(counter).w0);   
         end
-%        datas(reversal,:) = mainData(reversal,:);
         models(reversal,notnans(1):notnans(end)) = value;
-        
-        xs = (1:numTrials) - reversalPoint;
-        z = (zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2;
-        %ztemp(reversal, ~isnan(datas(reversal,:)) & datas(reversal,:) ~= 0) = (nanzscore(datas(reversal,~isnan(datas(reversal,:)) & datas(reversal,:) ~= 0)) - nanzscore(models(reversal,~isnan(datas(reversal,:)) & datas(reversal,:) ~= 0))).^2;
-        %zscores(reversal,:) = ztemp;
-        if(reversal == 1)
-           % plot(find(~isnan(data) & data ~= 0),zscore(data(~isnan(data) & data ~= 0)),'Color','r');
-           % plot(find(~isnan(data) & data ~= 0),zscore(value(~isnan(data) & data ~= 0)));
-           % plot(find(~isnan(data) & data ~= 0),z, 'Color', 'p');
-        end
-        %plot(find(~isnan(data) & data ~= 0),z);
-        %if(lrc == 1)
-         %   plot((zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2, 'Color', 'g');
-       % elseif(lrc == 2)
-        %    plot((zscore(data(~isnan(data) & data ~= 0)) - zscore(value(~isnan(data) & data ~= 0))).^2, 'Color', 'r');
-       % end
-        %currentdiff  = corr(value(~isnan(data) & data ~= 0)',data(~isnan(data) & data ~= 0)');
-        %corrdata(lrc,reversal) = currentCorr;
-       % totalCorr = totalCorr + currentCorr;
-       
-       
-       
     end
     corrs(lrc) = corr(zscore(nanmean((models(:,viewRange + reversalPoint))))', zscore(nanmean(mainData(:,viewRange + reversalPoint)))');
-    
+    subplot(2,1,1);
+    hold on;
+    plot(viewRange, (zscore(nanmean((models(:,viewRange + reversalPoint)))) - zscore(nanmean(mainData(:,viewRange + reversalPoint)))).^2,'Color',cmap((ceil((lrc/length(lr)) * 64)),:));
+    hold off;
     subplot(2,1,2);
     hold on;
     plot(viewRange,zscore(nanmean((models(:,viewRange + reversalPoint)))), 'Color',cmap((ceil((lrc/length(lr)) * 64)),:),'LineWidth',.8);
-    
     hold off;
     axis([-viewBefore viewAfter -2 2]);
 end
-subplot(2,1,1);
-plot(lr, corrs);
+%subplot(2,1,1);
+%plot(lr, corrs);
 
 subplot(2,1,2);
 hold on;
 plot(viewRange,zscore(nanmean(mainData(:,viewRange + reversalPoint))), 'Color','g','LineWidth',.8);
 hold off;
-%plot(lr,mean(zdata));
 
 
 
