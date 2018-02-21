@@ -2,28 +2,43 @@
 load('AR.mat');
 param = KTD_defparam;
 numCues = 2;
+%ensureFigure('LearningRate',1);
 figure;
 %SET DATA SOURCES
 firstHalf = AR.csMinus;
 secondHalf = AR.csPlus;
 mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
-reversalPoint = size(secondHalf.csLicks.before, 2);
+reversalPoint = size(firstHalf.csLicks.before, 2);
 numTrials = size(mainData,2);
 %number of reversals
 n = size(mainData,1);
 rewards = [firstHalf.ReinforcementOutcome.before secondHalf.ReinforcementOutcome.after];
 valves = [firstHalf.OdorValveIndex.before secondHalf.OdorValveIndex.after];
+acetyl = [firstHalf.phPeakMean_cs_ch1.before secondHalf.phPeakMean_cs_ch1.after];
+dopamine = [firstHalf.phPeakMean_cs_ch2.before secondHalf.phPeakMean_cs_ch2.after];
+firstReversals = cellfun(@(x,y) ~strcmp(x(1:5), y(1:5)),   firstHalf.filename.after(1:end-1,1), firstHalf.filename.after(2:end,1));
+firstReversals = [false; firstReversals];
+%normalize data
+for reversal = 1:n
+    data = AR.csPlus.csLicks.before(reversal,:);
+    notnans = find(~isnan(data) & data ~= 0);
+    mainData(reversal,:)  = mainData(reversal,:) / (mean(data(notnans(end-9:end))));
+end
 %SET VIEW RANGES FOR GRAPH
 viewBefore = 20;
-viewAfter = 20;
+viewAfter = 50;
 viewRange = (1:(viewAfter + viewBefore + 1))-(viewBefore + 1);
-%ensureFigure('LearningRate',1);
+%SET COLOR MAP
 colormap jet;
 cmap = colormap;
 %SETUP LEARNING RATES
-lr = linspace(0.05,0.5,9);
+
+lr = linspace(0.03,1,10);
+errorReversals = zeros(n,length(viewRange));
+errorGraphs = zeros(length(lr),length(viewRange));
 corrs = zeros(length(lr),1);
 for lrc = 1:length(lr)
+    lrc
     datas = nan(n,numTrials);
     models = nan(n,numTrials);
     zscores = zeros(n,numTrials);
@@ -36,18 +51,21 @@ for lrc = 1:length(lr)
         rw = rewards(reversal,:);
         rw = rw(notnans(1):notnans(end));
         reward = zeros(numTrials,1);
+        X = zeros(numTrials,2);
+        X(valves(reversal,notnans(1):notnans(end)) == 1,1) = 1;
+        X(valves(reversal,notnans(1):notnans(end)) == 2,2) = 1;
         for i = (1:numTrials)
           if(rw(i) == "Reward")
                reward(i) = 1;
           elseif(rw(i) == "Punish")
                 reward(i) = -1;
           else
+             %X(i,1) = 0;
+             %X(i,2) = 0;
              reward(i) = 0;
           end
         end
-        X = zeros(numTrials,2);
-        X(valves(reversal,notnans(1):notnans(end)) == 1,1) = 1;
-        X(valves(reversal,notnans(1):notnans(end)) == 2,2) = 1;
+       
         param.s = lr(1,lrc);
         param.q = 0.01;
         param.std = 1;
@@ -69,28 +87,49 @@ for lrc = 1:length(lr)
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
            value(1,counter) = X(counter,:) * (model(counter).w0);   
         end
+        error = abs(mainData(reversal,notnans(1):notnans(end)) - value);
+        errorReversals(reversal,:) = abs(value(viewRange + reversalPoint) - mainData(reversal,viewRange + reversalPoint));
         models(reversal,notnans(1):notnans(end)) = value;
     end
-    plotModel = zscore(nanmean((models(:,viewRange + reversalPoint))));
-    plotData = zscore(nanmean(mainData(:,viewRange + reversalPoint)));
+    plotModel = (nanmean((models(~firstReversals,viewRange + reversalPoint))));
+    plotData = (nanmean(mainData(~firstReversals,viewRange + reversalPoint)));
+    %corrModel = (nanmean(mainData(:,(0:50) + reversalPoint)));
+    %corrData = (nanmean(mainData(:,(0:50) + reversalPoint)));
+    errorGraphs(lrc,:) =mean(errorReversal(reversal,viewRange + reversalPoint));
     corrs(lrc) = corr(plotModel', plotData');
-    subplot(2,1,1);
+    %subplot(2,1,1);
+    %hold on;
+    %plot(viewRange, smoothdata((plotModel - plotData).^2,'movmean',5),'Color',cmap((ceil((lrc/length(lr)) * 64)),:));
+    %hold off;
+    subplot(2,2,2);
     hold on;
-    plot(viewRange, (plotModel - plotData).^2,'Color',cmap((ceil((lrc/length(lr)) * 64)),:));
-    hold off;
-    subplot(2,1,2);
-    hold on;
+    plotModel(plotModel < 0) = 0;
     plot(viewRange,plotModel, 'Color',cmap((ceil((lrc/length(lr)) * 64)),:),'LineWidth',.8);
     hold off;
-    axis([-viewBefore viewAfter -2 2]);
+    axis([-viewBefore viewAfter -1.2 1.2]);
+    subplot(2,2,4);
+    hold on;
+    %plot(viewRange,smoothdata(errorGraphs(lrc,:),'movmedian',3), 'Color',cmap((ceil((lrc/length(lr)) * 64)),:),'LineWidth',.8);
 end
 %subplot(2,1,1);
 %plot(lr, corrs);
-
-subplot(2,1,2);
+acetylData = (nanmean(acetyl(:,viewRange + reversalPoint)));
+dopamData = (nanmean(dopamine(:,viewRange + reversalPoint)));
+subplot(2,2,1);
 hold on;
-plot(viewRange,plotData, 'Color','g','LineWidth',.8);
+plot(viewRange,acetylData / 2, 'Color','m');
+plot(viewRange,dopamData / 2, 'Color','b');
+
 hold off;
+axis([-viewBefore viewAfter -1.1 1.1]);
+subplot(2,2,2);
+hold on;
+plot(-viewBefore:viewAfter, 1, 'Color','b');
+plot(viewRange,(plotData),'Color','g', 'LineWidth', 2);
+hold off;
+subplot(2,2,3);
+plot(lr,corrs);
+
 
 
 
