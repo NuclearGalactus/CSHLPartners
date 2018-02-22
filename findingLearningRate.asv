@@ -32,13 +32,12 @@ viewRange = (1:(viewAfter + viewBefore + 1))-(viewBefore + 1);
 colormap jet;
 cmap = colormap;
 %SETUP LEARNING RATES
-lr = linspace(0.1,1,10);
+
+lr = linspace(0.03,1,10);
 %lr = [.4];
 errorReversals = zeros(n,length(viewRange));
 errorGraphs = zeros(length(lr),length(viewRange));
 corrs = zeros(length(lr),1);
-%csPlus Odor
-%[ 1 2 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ]
 for lrc = 1:length(lr)
     lrc
     datas = nan(n,numTrials);
@@ -48,8 +47,10 @@ for lrc = 1:length(lr)
     for reversal = 1:n
         data = mainData(reversal,:);
         notnans = find(~isnan(data));
+        %data = data(notnans(1):notnans(end));
         numTrials = length(data); 
         rw = rewards(reversal,:);
+        %rw = rw(notnans(1):notnans(end));
         reward = zeros(numTrials,1);
         X = zeros(numTrials,2);
         X(valves(reversal,notnans(1):notnans(end)) == 1,1) = 1;
@@ -74,11 +75,6 @@ for lrc = 1:length(lr)
         param.q = 0.01;
         param.std = 1;
         param.lr = lr(1,lrc);
-        if(isempty(find(X(:,2))) == 0)
-            plus =2;
-        else
-            plus = 1;
-        end
         model = kalmanRW(X,reward,param);    
         rhat = zeros(n,1); % Predicted reward
         pe = zeros(numTrials,1); % prediction error
@@ -94,20 +90,32 @@ for lrc = 1:length(lr)
            Kn(:,counter) = model(counter).K;
            offDiag(counter) = model(counter).C(2,1); % covariance matrix is symmetric so bottom left or top right corner of 2,2 matrix are equivalent
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
-           value(1,counter) = w(plus,counter);
+           value(1,counter) = X(counter,:) * (model(counter).w0);   
         end
-      
-        models(reversal,notnans(1:end)) = value(notnans(1:end));
-       
+        error = abs(mainData(reversal,:) - value);
+        errorReversals(reversal,:) = abs(value(viewRange + reversalPoint) - mainData(reversal,viewRange + reversalPoint));
+        models(reversal,:) = value;
+        %subplot(2,2,2);
+        %hold on;
+        %domain = X(:,2) == 1;
+        %domain = domain(viewRange + reversalPoint);
+        %ranges = value(viewRange + reversalPoint);
+        %plot(find(domain) - viewBefore,ranges(domain));
+        %plot(-viewBefore:viewAfter, 1, 'Color','b');
+        %plot(viewRange,(plotData),'Color','g', 'LineWidth', 2);
+        %hold off;
     end
-    avglast10 = nanmean(AR.csPlus.csLicks.before(~firstReversals,:));
+    avglast10 = nanmean(AR.csPlus.before(~firstReversal,:));
     avglast10 = nanmean(avglast10(reversalPoint-9:reversalPoint));
     meaned = nanmean(mainData(~firstReversals,:));
     normalized= meaned / avglast10;
     meanedModel = nanmean(models(~firstReversals,:));
-    normalizedModel = meanedModel / nanmean(meanedModel(1,(1:10) + reversalPoint  + viewAfter - 10));
-    plotModel = (meanedModel(viewRange + reversalPoint));
+
+    normalizedModel = meanedModel / nanmean(meanedModel(:,reversalPoint-9:reversalPoint));
+    plotModel = (normalized(viewRange + reversalPoint));
     plotData = (normalized(viewRange + reversalPoint));
+    %corrModel = (nanmean(mainData(:,(0:50) + reversalPoint)));
+    %corrData = (nanmean(mainData(:,(0:50) + reversalPoint)));
     errorGraphs(lrc,:) =mean(errorReversals(reversal,:));
     corrs(lrc) = corr(plotModel', plotData');
     %subplot(2,1,1);
@@ -122,7 +130,7 @@ for lrc = 1:length(lr)
     axis([-viewBefore viewAfter -1.2 1.2]);
     subplot(2,2,4);
     hold on;
-   
+    %plot(viewRange,smoothdata(errorGraphs(lrc,:),'movmedian',3), 'Color',cmap((ceil((lrc/length(lr)) * 64)),:),'LineWidth',.8);
 end
 %subplot(2,1,1);
 %plot(lr, corrs);

@@ -49,5 +49,5 @@ function model = kalmanRW(X,r,param)
         model(n).K = K;
         model(n).dt = dt;
         model(n).rhat = rhat;
-        
+        %param.lr(n)*h'*dt
     end
