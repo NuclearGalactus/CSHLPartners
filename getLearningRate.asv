@@ -1,10 +1,12 @@
 function bestlr = getLearningRate(firstHalf, secondHalf, reversals, rangeAroundReversal)
-lr = linspace(0,1,100);
+lr = linspace(0.01,1,30);
 corrs = zeros(1,length(lr));
-
+param = KTD_defparam;
 %number of reversals
-reversalPoint = size(firstHalf,2);
-mainData = [firstHalf.csLicks.before(reversals,:) secondHalf.csLicks.after(reversals,:)];
+reversalPoint = size(firstHalf.csLicks.before,2);
+reversals = reversals == 1;
+mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
+numTrials = size(mainData,2);
 n = size(mainData,1);
 rewards = [firstHalf.ReinforcementOutcome.before(reversals,:) secondHalf.ReinforcementOutcome.after(reversals,:)];
 valves = [firstHalf.OdorValveIndex.before(reversals,:) secondHalf.OdorValveIndex.after(reversals,:)];
@@ -49,9 +51,9 @@ for lrc = 1:length(lr)
         end
         model = kalmanRW(X,reward,param);    
         rhat = zeros(n,1); % Predicted reward
-        pe = zeros(numTrials,1); % prediction error
-        w = zeros(numCues,numTrials); % weights
-        Kn = zeros(numCues,numTrials); % Kalman gain
+        pe = zeros(2,1); % prediction error
+        w = zeros(2,numTrials); % weights
+        Kn = zeros(2,numTrials); % Kalman gain
         offDiag = zeros(numTrials,1); % off diagonal term in posterior weight covariance matrix
         onDiag = zeros(2,numTrials); % on diagonal terms
         output = zeros(1,numTrials);
@@ -68,8 +70,10 @@ for lrc = 1:length(lr)
         models(reversal,:) = output;
        
     end
-    corrs(lrc) = corr(nanmean(mainData(dataRange))', nanmean(models(dataRange))');
+    corrs(lrc) = corr(nanmean(mainData(:,dataRange))', nanmean(models(:,dataRange))');
     
 end
-figure;
-plot(corrs);
+bestlr = corrs;
+xIndex = find(corrs == max(corrs), 1, 'first');
+%figure;
+%plot(lr,corrs);

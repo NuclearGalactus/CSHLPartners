@@ -1,0 +1,11 @@
+%% learning rate v reversal number
+learningRates = zeros(1,6);
+reversalNumbers = zeros(1,35);
+load('AR.mat');
+viewRange = 0:30;
+reversalNumbers(1) = 
+for i = 2:35
+for i = 1:6
+    
+end
+

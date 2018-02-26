@@ -1,9 +1,10 @@
 function bestlr = getLearningRate(firstHalf, secondHalf, reversals, rangeAroundReversal)
-lr = linspace(0.1,1,100);
+lr = linspace(0.01,1,30);
 corrs = zeros(1,length(lr));
 param = KTD_defparam;
 %number of reversals
 reversalPoint = size(firstHalf.csLicks.before,2);
+reversals = reversals == 1;
 mainData = [firstHalf.csLicks.before(reversals,:) secondHalf.csLicks.after(reversals,:)];
 numTrials = size(mainData,2);
 n = size(mainData,1);
@@ -11,7 +12,6 @@ rewards = [firstHalf.ReinforcementOutcome.before(reversals,:) secondHalf.Reinfor
 valves = [firstHalf.OdorValveIndex.before(reversals,:) secondHalf.OdorValveIndex.after(reversals,:)];
 dataRange = rangeAroundReversal + reversalPoint;
 for lrc = 1:length(lr)
-    lrc
     datas = nan(n,numTrials);
     models = nan(n,numTrials);
     zscores = zeros(n,numTrials);
@@ -72,6 +72,6 @@ for lrc = 1:length(lr)
     corrs(lrc) = corr(nanmean(mainData(:,dataRange))', nanmean(models(:,dataRange))');
     
 end
-bestlr = corrs;
-figure;
-plot(lr,corrs);
+bestlr = lr(find(corrs == max(corrs), 1, 'first'));
+%figure;
+%plot(lr,corrs);

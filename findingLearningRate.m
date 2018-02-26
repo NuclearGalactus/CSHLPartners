@@ -32,7 +32,7 @@ viewRange = (1:(viewAfter + viewBefore + 1))-(viewBefore + 1);
 colormap jet;
 cmap = colormap;
 %SETUP LEARNING RATES
-lr = linspace(0.05,0.35,30);
+lr = linspace(0.01,1,30);
 %lr = [.2];
 errorReversals = zeros(n,numTrials);
 errorGraphs = zeros(length(lr),length(viewRange));
