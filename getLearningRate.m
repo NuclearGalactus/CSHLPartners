@@ -65,13 +65,16 @@ for lrc = 1:length(lr)
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
            output(1,counter) = w(plus,counter);
         end
+       
         errorReversals(reversal,valves(reversal,:) == plus) = abs(output(valves(reversal,:) == plus) - mainData(reversal,valves(reversal,:) == plus));
         models(reversal,:) = output;
        
     end
-    corrs(lrc) = corr(nanmean(mainData(:,dataRange))', nanmean(models(:,dataRange))');
+    average = nanmean(mainData(:,dataRange));
+    average(isnan(average)) = 0;
+    corrs(lrc) = corr(average', nanmean(models(:,dataRange))');
     
 end
 bestlr = lr(find(corrs == max(corrs), 1, 'first'));
-%figure;
-%plot(lr,corrs);
+figure;
+plot(lr,corrs);
