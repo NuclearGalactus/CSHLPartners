@@ -5,8 +5,8 @@ numCues = 2;
 %ensureFigure('LearningRate',1);
 figure;
 %SET DATA SOURCES
-firstHalf = AR.csPlus;
-secondHalf = AR.csMinus;
+firstHalf = AR.csMinus;
+secondHalf = AR.csPlus;
 mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
 reversalPoint = size(firstHalf.csLicks.before, 2);
 numTrials = size(mainData,2);
@@ -32,7 +32,7 @@ viewRange = (1:(viewAfter + viewBefore + 1))-(viewBefore + 1);
 colormap jet;
 cmap = colormap;
 %SETUP LEARNING RATES
-lr = linspace(0.15,0.25,10);
+lr = linspace(0.05,0.35,30);
 %lr = [.2];
 errorReversals = zeros(n,numTrials);
 errorGraphs = zeros(length(lr),length(viewRange));
@@ -98,8 +98,8 @@ for lrc = 1:length(lr)
         models(reversal,:) = output;
        
     end
-    %avglast10 = nanmean(AR.csPlus.csLicks.before(~firstReversals,:));
-    %avglast10 = nanmean(avglast10(reversalPoint-9:reversalPoint));
+    avglast10 = nanmean(AR.csPlus.csLicks.before(~firstReversals,:));
+    avglast10 = nanmean(avglast10(reversalPoint-9:reversalPoint));
     meaned = nanmean(mainData(~firstReversals,:));
     normalized= meaned / avglast10;
     meanedModel = nanmean(models(~firstReversals,:));
