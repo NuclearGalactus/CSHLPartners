@@ -1,5 +1,6 @@
 %% learning rate v reversal number
 learningRates = zeros(1,6);
+path = 'C:\Users\tcare\Documents\Github\CSHLPartners\learningRateVReversalNumber\';
 reversalNumbers = zeros(1,35);
 load('AR.mat');
 viewRange = 0:30;
@@ -13,7 +14,7 @@ for i = 2:35
     end
 end
 for i = 1:6
-    lr = getLearningRate(AR.csMinus,AR.csPlus,(reversalNumbers == i)',viewRange);
+    lr = getLearningRate(AR.csPlus,AR.csMinus,(reversalNumbers == i)',viewRange);
     learningRates(1,i) = lr;
 end
 figure;
@@ -23,7 +24,7 @@ axis([1 6 0 1]);
 title('Learning Rate over Multiple Reversals');
 xlabel('Reversal Number');
 ylabel('Optimal Learning Rate');
-data = [AR.csPlus.csLicks.before AR.csMinus.csLicks.after];
+data = [AR.csMinus.csLicks.before AR.csPlus.csLicks.after];
 dataRange = viewRange + size(AR.csPlus.csLicks.before,2);
 figure;
 hold on;
@@ -38,4 +39,5 @@ for i = 1:6
     end
     hold off;
 end
+
 hold off;

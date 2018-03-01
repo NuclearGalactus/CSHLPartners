@@ -65,7 +65,6 @@ for lrc = 1:length(lr)
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
            output(1,counter) = w(plus,counter);
         end
-       
         errorReversals(reversal,valves(reversal,:) == plus) = abs(output(valves(reversal,:) == plus) - mainData(reversal,valves(reversal,:) == plus));
         models(reversal,:) = output;
        
@@ -76,5 +75,5 @@ for lrc = 1:length(lr)
     
 end
 bestlr = lr(find(corrs == max(corrs), 1, 'first'));
-figure;
-plot(lr,corrs);
+%figure;
+%plot(lr,corrs);
