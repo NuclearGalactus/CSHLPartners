@@ -4,13 +4,27 @@ corrs = zeros(1,length(lr));
 param = KTD_defparam;
 %number of reversals
 reversalPoint = size(firstHalf.csLicks.before,2);
-reversals = reversals == 1;
+%reversals = reversals == 1;
+%mainData = [firstHalf.csLicks.before(reversals,:) secondHalf.csLicks.after(reversals,:)];
+%tenPercentPoints = zeros(35,1);
+%for i = 1:35
+%    smoothed = smoothdata(mainData(i,:),'movmean',3);
+%    highVal = nanmean(smoothed((-10:0) + reversalPoint));
+%    lessThans = find(smoothed((0:50) + reversalPoint) <= (0.02 * highVal));
+%    if(isempty(lessThans))
+%        reversals(i) = 0;
+%    else
+%    tenPercentPoints(i) = lessThans(1) + reversalPoint;
+%    end
+%end
 mainData = [firstHalf.csLicks.before(reversals,:) secondHalf.csLicks.after(reversals,:)];
 numTrials = size(mainData,2);
 n = size(mainData,1);
 rewards = [firstHalf.ReinforcementOutcome.before(reversals,:) secondHalf.ReinforcementOutcome.after(reversals,:)];
 valves = [firstHalf.OdorValveIndex.before(reversals,:) secondHalf.OdorValveIndex.after(reversals,:)];
 dataRange = rangeAroundReversal + reversalPoint;
+corrPerLR = zeros(35,1);
+
 for lrc = 1:length(lr)
     datas = nan(n,numTrials);
     models = nan(n,numTrials);
@@ -63,11 +77,11 @@ for lrc = 1:length(lr)
            Kn(:,counter) = model(counter).K;
            offDiag(counter) = model(counter).C(2,1); % covariance matrix is symmetric so bottom left or top right corner of 2,2 matrix are equivalent
            onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
-           output(1,counter) = w(plus,counter);
+           output(1,counter) = (w(plus,counter));
         end
         errorReversals(reversal,valves(reversal,:) == plus) = abs(output(valves(reversal,:) == plus) - mainData(reversal,valves(reversal,:) == plus));
-        models(reversal,:) = output;
-       
+        models(reversal,:) = max(output,0);
+       % corrPerLR(reversal) = corr(average', n(models(:,dataRange))');
     end
     average = nanmean(mainData(:,dataRange));
     average(isnan(average)) = 0;
