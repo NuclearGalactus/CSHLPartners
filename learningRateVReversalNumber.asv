@@ -5,8 +5,6 @@ reversalNumbers = zeros(1,35);
 load('AR.mat');
 viewRange = -20:40;
 reversalNumbers(1) = 1;
-firstHalf = AR.csMinus;
-secondHalf = AR.csPlus;
 filenames = AR.csPlus.filename.before(:,end);
 for i = 2:35
     if(strncmpi(filenames(i),(filenames(i-1)),5))
@@ -16,21 +14,20 @@ for i = 2:35
     end
 end
 figure;
-data = [firstHalf.csLicks.before secondHalf.csLicks.after];
-dataRange = (viewRange) + size(secondHalf.csLicks.before,2);
+data = [AR.csMinus.csLicks.before AR.csPlus.csLicks.after];
+dataRange = (viewRange) + size(AR.csPlus.csLicks.before,2);
 for i = 1:6
     subplot(3,2,i);
     hold on;
     title("Reversal " + i);
-    lr = getLearningRate(firstHalf,secondHalf,(reversalNumbers == i)',viewRange);
+    lr = getLearningRate(AR.csMinus,AR.csPlus,(reversalNumbers == i)',viewRange);
     meanData = nanmean(data(reversalNumbers == i,:));
-    reversalPoint = size(firstHalf.csLicks.before,2);
-    normalizer = mean(meanData(reversalPoint + (10:20)));
-    plot(viewRange, nanmean(data(reversalNumbers == i,dataRange)) / normalizer, 'Color', 'y', 'LineWidth', 1.5);
+    normalizer = me
+    plot(viewRange, nanmean(data(reversalNumbers == i,dataRange)), 'Color', 'y', 'LineWidth', 1.5);
     plot(viewRange, lr.graph(dataRange), 'Color', 'b', 'LineWidth',1.5); 
     reversals = find(reversalNumbers == i);
     for j = 1:length(reversals)
-        plot(viewRange, data(reversals(j),dataRange) / normalizer, 'Color', 'r');
+        plot(viewRange, data(reversals(j),dataRange), 'Color', 'r');
     end
     hold off;
     

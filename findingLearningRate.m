@@ -154,10 +154,11 @@ hold off;
 axis([-viewBefore viewAfter 0 2]);
 subplot(2,2,3);
 hold on;
-plot(lr,corrs);
+%plot(lr,corrs);
 xlabel('Learning Rate') % x-axis label
 ylabel('Correlation')
-%{
+
+
 
 ensureFigure('Learning Rate Graph',1);
 subplot(2,1,1);
