@@ -36,8 +36,8 @@ for i = 1:6
     
     learningRates(1,i) = lr.value;
 end
-saveas(all,path + "ReversalsCSPLUS.jpg");
-saveas(all,path + "ReversalsCSPLUS.fig");
+%saveas(all,path + "ReversalsCSPLUS.jpg");
+%saveas(all,path + "ReversalsCSPLUS.fig");
 learns = figure;
 plot(learningRates, 'Color', 'r');
 xticks([1 2 3 4 5 6]);

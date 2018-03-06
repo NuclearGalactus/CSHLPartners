@@ -41,7 +41,7 @@ for i = 1:6
     subplot(3,2,i);
     hold on;
     title("Reversal " + i);
-    lr = getLearningRate(firstHalf,secondHalf,(reversalNumbers == i)',0:40);
+    lr = getLearningRateCSMINUS(firstHalf,secondHalf,(reversalNumbers == i)',-4);
     meanData = nanmean(data(reversalNumbers == i,:));
     reversalPoint = size(firstHalf.csLicks.before,2);
     normalizer = mean(meanData(reversalPoint + (-20:-10)));
@@ -55,8 +55,8 @@ for i = 1:6
     
     learningRates(1,i) = lr.value;
 end
-saveas(all,path + "ReversalsCSPLUS.jpg");
-saveas(all,path + "ReversalsCSPLUS.fig");
+%saveas(all,path + "ReversalsCSPLUS.jpg");
+%saveas(all,path + "ReversalsCSPLUS.fig");
 learns = figure;
 plot(learningRates, 'Color', 'r');
 xticks([1 2 3 4 5 6]);
