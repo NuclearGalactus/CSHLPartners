@@ -46,7 +46,7 @@ for lrc = 1:length(lr)
           elseif(rw(i) == "Reward")
              reward(i) = 1;
           elseif(rw(i) == "Punish")
-             reward(i) = -1;
+             reward(i) = -.1;
           else
              %X(i,1) = 0;
              %X(i,2) = 0;
@@ -62,9 +62,9 @@ for lrc = 1:length(lr)
         else
             plus = 1;
         end
-        model = kalmanRW(X,reward,param);    
+        model = kalmanRW(X,reward,param,0);    
         rhat = zeros(n,1); % Predicted reward
-        pe = zeros(2,1); % prediction error
+        pe = zeros(2,numTrials); % prediction error
         w = zeros(2,numTrials); % weights
         Kn = zeros(2,numTrials); % Kalman gain
         offDiag = zeros(numTrials,1); % off diagonal term in posterior weight covariance matrix
@@ -85,10 +85,10 @@ for lrc = 1:length(lr)
     end
     average = nanmean(mainData(:,dataRange));
     average(isnan(average)) = 0;
-    corrs(lrc) = corr(average', nanmean(models(:,dataRange))');
+    corrs(lrc) = sum(abs(average - nanmean(models(:,dataRange))));
     
 end
-bestlr.value = lr(find(corrs == max(corrs), 1, 'first'));
+bestlr.value = lr(find(corrs == min(corrs), 1, 'first'));
 
 datas = nan(n,numTrials);
     models = nan(n,numTrials);
@@ -110,7 +110,7 @@ datas = nan(n,numTrials);
           elseif(rw(i) == "Reward")
              reward(i) = 1;
           elseif(rw(i) == "Punish")
-             reward(i) = -1;
+             reward(i) = -.1;
           else
              %X(i,1) = 0;
              %X(i,2) = 0;
@@ -126,7 +126,7 @@ datas = nan(n,numTrials);
         else
             plus = 1;
         end
-        model = kalmanRW(X,reward,param);    
+        model = kalmanRW(X,reward,param,0);    
         rhat = zeros(n,1); % Predicted reward
         pe = zeros(2,1); % prediction error
         w = zeros(2,numTrials); % weights

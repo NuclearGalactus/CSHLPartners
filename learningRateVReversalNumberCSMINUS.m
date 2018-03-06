@@ -1,10 +1,10 @@
 %% learning rate v reversal number
 
 learningRates = zeros(1,6);
-path = 'C:\Users\tcare\Documents\Github\CSHLPartners\';
+path = 'C:\Users\tcare\Documents\Github\CSHLPartners\Final_Figures\';
 reversalNumbers = zeros(1,35);
 load('AR.mat');
-viewRange = -20:40;
+viewRange = -50:40;
 reversalNumbers(1) = 1;
 firstHalf = AR.csPlus;
 secondHalf = AR.csMinus;
@@ -47,6 +47,7 @@ for i = 1:6
     normalizer = mean(meanData(reversalPoint + (-20:-10)));
     plot(viewRange, nanmean(data(reversalNumbers == i,dataRange)) / normalizer, 'Color', 'g', 'LineWidth', 1.5);
     plot(viewRange, lr.graph(dataRange), 'Color', 'b', 'LineWidth',1.5); 
+    %plot(viewRange, lr.extra(dataRange), 'Color', 'b', 'LineWidth',1.5);
     reversals = find(reversalNumbers == i);
     for j = 1:length(reversals)
         plot(viewRange, data(reversals(j),dataRange) / normalizer, 'Color', 'r');
@@ -55,8 +56,8 @@ for i = 1:6
     
     learningRates(1,i) = lr.value;
 end
-%saveas(all,path + "ReversalsCSPLUS.jpg");
-%saveas(all,path + "ReversalsCSPLUS.fig");
+saveas(all,path + "ReversalsCSMINUS.jpg");
+saveas(all,path + "ReversalsCSMINUS.fig");
 learns = figure;
 plot(learningRates, 'Color', 'r');
 xticks([1 2 3 4 5 6]);
@@ -64,6 +65,6 @@ axis([1 6 0 1]);
 title('Learning Rate over Multiple Reversals');
 xlabel('Reversal Number');
 ylabel('Optimal Learning Rate');
-saveas(learns, path + "ReversalVLearningRateCSPLUS.fig");
-saveas(learns, path + "ReversalVLearningRateCSPLUS.jpg");
+saveas(learns, path + "ReversalVLearningRateCSMINUS.fig");
+saveas(learns, path + "ReversalVLearningRateCSMINUS.jpg");
 

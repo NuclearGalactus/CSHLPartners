@@ -1,11 +1,13 @@
-function model = kalmanRW(X,r,param)
+function model = kalmanRW(X,r,param, startone)
     
     if nargin < 3; param = KTD_defparam; end
     
     % initialization
     [N,D] = size(X);
     w = zeros(D,1);
-    
+    if(startone)
+        w = w + 1;
+    end
     % parameters
     if nargin < 3 || isempty(param); param = KTD_defparam; end
     C = param.c*eye(D); % prior covariance
