@@ -43,7 +43,7 @@ plot(learningRates, 'Color', 'r');
 xticks([1 2 3 4 5 6]);
 axis([1 6 0 1]);
 title('Learning Rate over Multiple Reversals');
-xlabel('Reversal Number');
+xlabel('Re versal Number');
 ylabel('Optimal Learning Rate');
 saveas(learns, path + "ReversalVLearningRateCSPLUS.fig");
 saveas(learns, path + "ReversalVLearningRateCSPLUS.jpg");
