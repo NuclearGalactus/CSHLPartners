@@ -91,10 +91,10 @@ for lrc = 1:length(lr)
     end
     average = nanmean(mainData(:,dataRange));
     average(isnan(average)) = 0;
-    corrs(lrc) = mean(corrPerReversal((corrPerReversal ~= -1)'));
+    corrs(lrc) = sum(abs(average - nanmean(models(:,dataRange))));
     
 end
-bestlr.value = lr(find(corrs == max(corrs), 1, 'first'));
+bestlr.value = lr(find(corrs == min(corrs), 1, 'first'));
 
 datas = nan(n,numTrials);
     models = nan(n,numTrials);
