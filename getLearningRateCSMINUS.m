@@ -1,5 +1,5 @@
 function bestlr = getLearningRateCSMINUS(firstHalf, secondHalf, reversals, pointBefore)
-lr = linspace(0.01,.3,30);
+lr = linspace(0.01,.4,30);
 corrs = zeros(1,length(lr));
 param = KTD_defparam;
 %number of reversals
@@ -85,7 +85,7 @@ for lrc = 1:length(lr)
         if(tenPercentPoints(reversal) == -1)
             corrPerReversal(reversal) = -1;
         else
-            corrPerReversal(reversal) = corr(thisData(~isnan(thisData))',thisOutput(~isnan(thisData))');
+            corrPerReversal(reversal) = sum(abs(thisOutput - (models(reversal,dataRange))));
             %corrPerReversal(reversal) = sum(abs((thisData(~isnan(thisData)) - thisOutput(~isnan(thisData)))));
         end
     end
