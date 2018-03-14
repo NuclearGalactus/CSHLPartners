@@ -40,7 +40,7 @@ for i = 1:6
     axis([-20 40 -1 3]);
     reversals = find(reversalNumbers == i);
     for j = 1:length(reversals)
-        plot(viewRange, data(reversals(j),dataRange) / normalizer, 'Color', 'r');
+        plot(viewRange, data(reversals(j),dataRange), 'Color', 'r');
     end
     hold off;
     
@@ -49,7 +49,11 @@ end
 saveas(all,fullfile(path, 'ReversalsCSPLUS.jpg'));
 saveas(all,fullfile(path, 'ReversalsCSPLUS.fig'));
 learns = figure;
-plot(learningRates, 'Color', 'r');
+p = polyfit(1:6,learningRates, 1);
+hold on;
+prediction = (p(1) * (1:6)) + p(2);
+errorbar(prediction, abs(learningRates - prediction), 'Color', 'r');
+hold off;
 xticks([1 2 3 4 5 6]);
 axis([1 6 0 1]);
 title('Learning Rate over Multiple Reversals');
