@@ -5,6 +5,12 @@ AR.csPlus.csLicks.before = bsxfun(@rdivide, AR.csPlus.csLicks.before, normValues
 AR.csPlus.csLicks.after = bsxfun(@rdivide, AR.csPlus.csLicks.after, normValues);
 AR.csMinus.csLicks.before = bsxfun(@rdivide, AR.csMinus.csLicks.before, normValues);
 AR.csMinus.csLicks.after = bsxfun(@rdivide, AR.csMinus.csLicks.after, normValues);
+firstHalf = AR.csPlus;
+secondHalf = AR.csMinus;
+mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
+rewards = [firstHalf.ReinforcementOutcome.before secondHalf.ReinforcementOutcome.after];
+valves = [firstHalf.OdorValveIndex.before secondHalf.OdorValveIndex.after];
+reversalPoint = size(firstHalf.csLicks.before,2);
 reversalNumbers = zeros(35,1);
 filenames = AR.csPlus.filename.before(:,end);
 reversalNumbers(1) = 1;
@@ -26,12 +32,6 @@ for i = 1:35
     tenPercentPoints(i) = lessThans(1);
     end
 end
-firstHalf = AR.csPlus;
-secondHalf = AR.csMinus;
-mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
-rewards = [firstHalf.ReinforcementOutcome.before secondHalf.ReinforcementOutcome.after];
-valves = [firstHalf.OdorValveIndex.before secondHalf.OdorValveIndex.after];
-reversalPoint = size(firstHalf.csLicks.before,2);
 lr = linspace(0,0.3,30);
 viewBefore = 20;
 viewAfter = 40;

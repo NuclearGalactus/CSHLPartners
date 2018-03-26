@@ -19,7 +19,7 @@ end
 tenPercentPoints = zeros(35,1) + 20;
 firstHalf = AR.csMinus;
 secondHalf = AR.csPlus;
-mainData = [firstHalf.csLicks.before secondHalf.csLicks.after];
+mainData = [firstHalf.phPeakMean_cs_ch2.before secondHalf.phPeakMean_cs_ch2.after];
 rewards = [firstHalf.ReinforcementOutcome.before secondHalf.ReinforcementOutcome.after];
 valves = [firstHalf.OdorValveIndex.before secondHalf.OdorValveIndex.after];
 reversalPoint = size(firstHalf.csLicks.before,2);

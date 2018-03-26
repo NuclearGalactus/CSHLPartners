@@ -1,0 +1,25 @@
+load('TE.mat');
+%plot(nanmean(TE.Photometry.data.ZS,1));
+path = 'C:\Users\tcare\Documents\GitHub\CSHLPartners\Deconvolution\';
+cued_highValue_Reward = filterTE(TE, 'trialType', 1);
+cued_lowValue_Reward = filterTE(TE, 'trialType', 4);
+uncuedPunishment = filterTE(TE, 'trialType', 8);
+kernal = phAverageFromTE(TE, uncuedPunishment, 1, 'window', [0 2], 'FluorDataField', 'ZS');
+figure;
+data =  TE.Photometry.data.ZS(cued_highValue_Reward,:);
+h = kernal.Avg;
+y = data(1,:)';
+plot(y);
+Lx=length(y)-length(h)+1;   
+Lx2=pow2(nextpow2(Lx));    
+Y=fft(y, Lx2);		   
+H=fft(h, Lx2);		   
+X=(Y')./H;        		    
+x=real(ifft(X, Lx2));      
+x=x(1:1:Lx);               
+x=x/max(abs(x));
+fourier = figure;
+plot(x);
+
+saveas(fourier, fullfile(path, 'deconvolution_fourier.fig'));
+saveas(fourier, fullfile(path, 'deconvolution_fourier.jpg'));
