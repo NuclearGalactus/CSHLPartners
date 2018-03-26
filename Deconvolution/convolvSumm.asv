@@ -1,0 +1,11 @@
+function output = convolvSumm(data, kernelXData, kernel)
+convolved = zeros(length(data),1);
+h = kernal.Avg;
+for i = 2:(length(individual)-1)
+    currentVal = 0;
+    for j = 0:length(kernel)
+        currentVal = currentVal + (h(kernelXData = j) * individual(i - j + 1));
+    end
+    convolved(i,1) = currentVal;
+end
+output = convolved;

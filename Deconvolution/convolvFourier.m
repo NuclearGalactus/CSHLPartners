@@ -1,0 +1,12 @@
+function output = convolvFourier(data, kernel)
+y = data;
+h = kernel;
+Lx=length(y)-length(h)+1;   
+Lx2=pow2(nextpow2(Lx));    
+Y=fft(y, Lx2);		   
+H=fft(h, Lx2);		   
+X=(Y')./H;        		    
+x=real(ifft(X, Lx2));      
+x=x(1:1:Lx);               
+x=x/max(abs(x));
+output = x;
