@@ -1,4 +1,4 @@
-function output = convolvFourier(data, kernel)
+function output = convolvFourier(data, xData, kernel, kernalxData)
 y = data;
 h = kernel;
 Lx=length(y)-length(h)+1;   

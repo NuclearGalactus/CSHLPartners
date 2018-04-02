@@ -1,11 +1,11 @@
-function output = convolvSumm(data, kernelXData, kernel)
-convolved = zeros(length(data),1);
-for i = 1:(length(data))
+function output = convolvSumm(data2, kernelXData, kernel)
+halfKern = ceil(length(kernel) / 2) + 1;
+dataPadded = [fliplr(data2(1:halfKern)) data2 fliplr(data2(end-halfKern+1:end))];
+convolved = zeros(length(dataPadded),1);
+for i = (halfKern + 1):(length(dataPadded) - 2 * halfKern)
     currentVal = 0;
     for j = kernelXData
-        if(i + j > 0 && i + j <= length(data))
-        currentVal = currentVal + (kernel(kernelXData == j) * data(i + j));
-        end
+        currentVal = currentVal + dataPadded(i + j) * (kernel(kernelXData == j));
     end
     convolved(i,1) = currentVal;
 end
