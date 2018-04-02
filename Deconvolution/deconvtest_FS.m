@@ -1,6 +1,7 @@
 
 %plot(nanmean(TE.Photometry.data.ZS,1));
- path = 'C:\Users\tcare\Documents\GitHub\CSHLPartners\Deconvolution\';
+path = 'C:\Users\tcare\OneDrive\Documents\GitHub\CSHLPartners\Deconvolution\';
+ %path = 'C:\Users\tcare\Documents\GitHub\CSHLPartners\Deconvolution\';
 %path = 'C:\Users\Adam\Documents\Repos\CSHLPartners\Deconvolution\';
 cd(path);
 load('TE.mat');
