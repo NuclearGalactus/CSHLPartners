@@ -1,7 +1,7 @@
 load('TE.mat');
 %plot(nanmean(TE.Photometry.data.ZS,1));
-path = 'C:\Users\tcare\Documents\GitHub\CSHLPartners\Deconvolution\';
-
+%path = 'C:\Users\tcare\Documents\GitHub\CSHLPartners\Deconvolution\';
+path = 'C:\Users\tcare\OneDrive\Documents\GitHub\CSHLPartners\Deconvolution\';
 cued_highValue_Reward = filterTE(TE, 'trialType', 1);
 cued_lowValue_Reward = filterTE(TE, 'trialType', 4);
 uncuedPunishment = filterTE(TE, 'trialType', 8);
@@ -27,14 +27,11 @@ H= fft(h, Lx2);
 X = zeros(n,Lx2);
 out = zeros(n,Lx);
 for counter = 1:n
- y(counter,:) = data(counter,:);%nanmean(data);    % Find smallest power of 2 that is > Lx
+ y(counter,:) = data(counter,:);  % Find smallest power of 2 that is > Lx
  Y(counter,:)=fft(y(counter,:) .* W', Lx2);		   % Fast Fourier transform		   % Fast Fourier transform
- %X(counter,:)=Y(counter,:)./H;
  X(counter,:) = (Y(counter,:).*conj(H))./(H.*conj(H)+eps*mean(H.*conj(H))); 
  x= real(ifft(X(counter,:)));
- %x=real(ifft(X(counter,:), Lx2));      % Inverse fast Fourier transform
  x=x(1:1:Lx);
- %x = [x(L/2:L) x(3:L/2-1)];% Take just the first N elements
  out(counter,:)=x;
 end
 % uz1 = data(1,:)';
@@ -56,24 +53,25 @@ end
 % %Stmp = real(ifft((uz1f.*conj(uz2f))));%./(uz2f.*conj(uz2f)+eps*mean(uz2f.*conj(uz2f)))));
 % Stmp = real(ifft(uz1f ./ uz2f));
 % S = [Stmp(L/2:L); Stmp(3:L/2-1)];
-figure;
+full = figure('units','normalized','outerposition',[0 0 1 1]);
 subplot(3,2,1); plot(nanmean(y));
-title("Data");
+title("Averaged Data");
 subplot(3,2,2); plot((h));
 title("Kernel");
-subplot(3,2,3); plot(real(Y(1,:)));
-title("Fourier Data");
+subplot(3,2,3); plot(real(nanmean(Y)));
+title("Averaged Data after Transformation");
 %subplot(3,2,4); plot(real(ifft(Y(1,:))));
 %title("Inverse Fourier");
 subplot(3,2,4); plot(real((H)));
-title("Fourier Kernel");
+title("Kernel after Transformation");
 subplot(3,2,5); plot(real(nanmean(X)));
-title("Fourier Multiplied");
+title("Transforms Multiplied");
 subplot(3,2,6); hold on;plot(nanmean((out)) / max(nanmean((out))));
 plot(nanmean((y)) / max(nanmean(y)));
+legend("Before", "After");
 axis([0 180 -2 2]);
 title("Final Output");
-%saveas(fourier, fullfile(path, 'deconvolution_fourier.fig'));
-%saveas(fourier, fullfile(path, 'deconvolution_fourier.jpg'));
+saveas(full, fullfile(path, 'deconvolution_fourier.fig'));
+saveas(full, fullfile(path, 'deconvolution_fourier.jpg'));
 
 
