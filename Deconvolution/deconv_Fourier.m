@@ -1,7 +1,10 @@
-function output = deconv_Fourier(data, kernel, eps)
+function output = deconv_Fourier(data, kernel, eps, window)
 if nargin < 3
     eps = 0.1;
+elseif nargin < 4
+    window = "none";
 end
+
 % data must be a row vector or a series of row vectors to be averaged
 % kernel must be a single row vector
 % eps must be a scalar, or absent to be defaulted to .1
@@ -10,7 +13,16 @@ n = size(data,1); % length of data vector
 L = size(data,2); % number of data vectors to process
 Lx=size(data,2)-length(kernel)+1; % deconvolved length
 Lx2=pow2(nextpow2(Lx)); % closed power of two to deconvolved length, makes fft faster
-W = blackman(size(data,2)); % window with blackman filter to reduce spectral leakage
+W = ones(size(data,2),1);
+switch window
+    case "none"
+        W = ones(size(data,2),1);
+    case "blackman"
+        W = blackman(size(data,2));
+    case "hann"
+        W = hann(size(data,2));
+end
+%W = blackman(size(data,2)); % window with blackman filter to reduce spectral leakage
 H= fft(kernel, Lx2); % transform kernel, kernel is constant so this only need be done once
 out = zeros(n,Lx); % instantiate process vector
 for counter = 1:n
