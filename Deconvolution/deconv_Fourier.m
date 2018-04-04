@@ -1,10 +1,10 @@
 function output = deconv_Fourier(data, kernel, eps, window)
-if nargin < 3
-    eps = 0.1;
-elseif nargin < 4
+if nargin < 4
     window = "none";
+    if nargin < 3
+        eps = 0.1;
+    end
 end
-
 % data must be a row vector or a series of row vectors to be averaged
 % kernel must be a single row vector
 % eps must be a scalar, or absent to be defaulted to .1
