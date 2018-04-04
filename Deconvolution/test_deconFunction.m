@@ -10,7 +10,7 @@ data =  TE.Photometry.data.ZS;
 h = kernel.Avg; 
 
 
-out = deconv_Fourier(data, h, 0.1);
+out = deconv_Fourier(data, h);
 full = figure('units','normalized','outerposition',[0 0 1 1]);
 hold on;
 avged = nanmean(data);

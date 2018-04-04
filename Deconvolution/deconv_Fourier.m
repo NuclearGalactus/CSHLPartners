@@ -1,4 +1,7 @@
 function output = deconv_Fourier(data, kernel, eps)
+if nargin < 3
+    eps = 0.1;
+end
 % data must be a row vector or a series of row vectors to be averaged
 % kernel must be a single row vector
 % eps must be a scalar, or absent to be defaulted to .1
