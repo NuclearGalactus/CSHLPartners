@@ -44,4 +44,8 @@ for i = 1:Lx
     output(1,i) = sum(avgs) / length(avgs);
 end
 %output = output / max(output); % normalization
-output = out;
+out2 = nan(n, 220);
+for i = 1:Lx
+    out2(:,i) = out(:,i);
+end
+output = out2;

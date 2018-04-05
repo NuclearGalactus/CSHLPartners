@@ -14,6 +14,7 @@ L = size(data,2); % number of data vectors to process
 Lx=size(data,2)-length(kernel)+1; % deconvolved length
 Lx2=pow2(nextpow2(Lx)); % closed power of two to deconvolved length, makes fft faster
 W = ones(size(data,2),1);
+kernel = kernel / trapz(kernel);
 switch window
     case "none"
         W = ones(size(data,2),1);
@@ -30,15 +31,17 @@ for counter = 1:n
  X = (Y.*conj(H))./(H.*conj(H)+eps*mean(H.*conj(H))); % deconvolve, regularizing with epsilon
  x= real(ifft(X)); % transform back to original domain
  x=x(1:1:Lx); % take valid portion of deconvolved vector
- out(counter,:)=x;
+ out(counter,:)=[x ;
 end
 
 
+%output = nanmean(out);
 %averages out vector ignoring nans (same as nanmean function)
-%output = zeros(1, Lx);
-%%for i = 1:Lx
- %   avgs = out(:,i);
-  %  avgs = avgs(~isnan(avgs));
-   % output(1,i) = sum(avgs) / length(avgs);
-%end
+output = zeros(1, Lx);
+for i = 1:Lx
+    avgs = out(:,i);
+    avgs = avgs(~isnan(avgs));
+    output(1,i) = sum(avgs) / length(avgs);
+end
 %output = output / max(output); % normalization
+output = out;
