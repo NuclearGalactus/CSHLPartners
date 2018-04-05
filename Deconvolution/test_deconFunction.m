@@ -8,13 +8,11 @@ uncuedPunishment = filterTE(TE, 'trialType', 8);
 kernel = phAverageFromTE(TE, uncuedPunishment, 1, 'window', [0 2], 'FluorDataField', 'ZS');
 data =  TE.Photometry.data.ZS;
 h = kernel.Avg; 
-
-
-out = deconv_Fourier(data, h);
+out = deconv_Fourier(data, h, 0.2);
 full = figure('units','normalized','outerposition',[0 0 1 1]);
 hold on;
 avged = nanmean(data);
-plot(avged / max(avged));
+plot(avged);% / max(avged));
 plot(out);
 legend("Before", "After");
 axis([0 180 -2 2]);
