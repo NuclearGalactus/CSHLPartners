@@ -34,6 +34,7 @@ for counter = 1:n
  out(counter,:)=x;
 end
 
+
 %output = nanmean(out);
 %averages out vector ignoring nans (same as nanmean function)
 output = zeros(1, Lx);
@@ -43,3 +44,4 @@ for i = 1:Lx
     output(1,i) = sum(avgs) / length(avgs);
 end
 %output = output / max(output); % normalization
+output = out;
