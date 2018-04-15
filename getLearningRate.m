@@ -1,35 +1,17 @@
-function bestlr = getLearningRate(firstHalf, secondHalf, reversals, rangeAroundReversal)
-lr = linspace(0.01,1,30);
-corrs = zeros(1,length(lr));
-param = KTD_defparam;
-%number of reversals
-reversalPoint = size(firstHalf.csLicks.before,2);
-%reversals = reversals == 1;
-%mainData = [firstHalf.csLicks.before(reversals,:) secondHalf.csLicks.after(reversals,:)];
-%tenPercentPoints = zeros(35,1);
-%for i = 1:35
-%    smoothed = smoothdata(mainData(i,:),'movmean',3);
-%    highVal = nanmean(smoothed((-10:0) + reversalPoint));
-%    lessThans = find(smoothed((0:50) + reversalPoint) <= (0.02 * highVal));
-%    if(isempty(lessThans))
-%        reversals(i) = 0;
-%    else
-%    tenPercentPoints(i) = lessThans(1) + reversalPoint;
-%    end
-%end
-mainData = [firstHalf.csLicks.before(reversals,:) secondHalf.csLicks.after(reversals,:)];
-numTrials = size(mainData,2);
-n = size(mainData,1);
-rewards = [firstHalf.ReinforcementOutcome.before(reversals,:) secondHalf.ReinforcementOutcome.after(reversals,:)];
-valves = [firstHalf.OdorValveIndex.before(reversals,:) secondHalf.OdorValveIndex.after(reversals,:)];
-dataRange = rangeAroundReversal + reversalPoint;
-corrPerLR = zeros(35,1);
+function bestlr = findBestLearningRateRW(mainData, cues, lr, rewards, ranges, logical, initial)
+%reversals is a logical that will select which rows to include
+reversals = logical;
+param = KTD_defparam; %establish parameters for the learning algorithm
+mainData = mainData(reversals,:); %establish actual dataset (must be analagous to predicted reward)
+numTrials = size(mainData,2); %max length of reversals, used for padding
+n = size(mainData,1); %number of reversals to iterate through
+rewards = rewards(reversals,:); %defines how much reward is delivered during each trial
+valves = cues(reverals,:); %defines which cues are presented during each trial
+dataRange = ranges; %where to look in each 
 bestlr.deviation = zeros(length(lr),1);
 for lrc = 1:length(lr)
-    datas = nan(n,numTrials);
     models = nan(n,numTrials);
-    zscores = zeros(n,numTrials);
-    totalCorr = 0;
+    errors = zeros(n,numTrials);
     for reversal = 1:n
         data = mainData(reversal,:);
         notnans = find(~isnan(data));
@@ -48,8 +30,6 @@ for lrc = 1:length(lr)
           elseif(rw(i) == "Punish")
              reward(i) = -.1;
           else
-             %X(i,1) = 0;
-             %X(i,2) = 0;
              reward(i) = 0;
           end
         end
@@ -63,89 +43,20 @@ for lrc = 1:length(lr)
             plus = 1;
         end
         model = kalmanRW(X,reward,param,0);    
-        rhat = zeros(n,1); % Predicted reward
-        pe = zeros(2,numTrials); % prediction error
         w = zeros(2,numTrials); % weights
-        Kn = zeros(2,numTrials); % Kalman gain
-        offDiag = zeros(numTrials,1); % off diagonal term in posterior weight covariance matrix
-        onDiag = zeros(2,numTrials); % on diagonal terms
         output = zeros(1,numTrials);
         for counter = 1:numTrials
-           rhat(counter) = model(counter).rhat;
-           pe(counter) = model(counter).dt;
            w(:,counter) = model(counter).w0;
-           Kn(:,counter) = model(counter).K;
-           offDiag(counter) = model(counter).C(2,1); % covariance matrix is symmetric so bottom left or top right corner of 2,2 matrix are equivalent
-           onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
            output(1,counter) = (w(plus,counter));
         end
         errorReversals(reversal,valves(reversal,:) == plus) = abs(output(valves(reversal,:) == plus) - mainData(reversal,valves(reversal,:) == plus));
         models(reversal,:) = max(output,0);
-       % corrPerLR(reversal) = corr(average', n(models(:,dataRange))');
     end
     average = nanmean(mainData(:,dataRange));
     average(isnan(average)) = 0;
-    corrs(lrc) = sum(abs(average - nanmean(models(:,dataRange))));
-    
+    errors(lrc) = sum(abs(average - nanmean(models(:,dataRange))));    
 end
-bestlr.value = lr(find(corrs == min(corrs), 1, 'first'));
+bestlr.value = lr(find(errors == min(errors), 1, 'first'));
 
-datas = nan(n,numTrials);
-    models = nan(n,numTrials);
-    zscores = zeros(n,numTrials);
-    totalCorr = 0;
-    for reversal = 1:n
-        data = mainData(reversal,:);
-        notnans = find(~isnan(data));
-        numTrials = length(data); 
-        rw = rewards(reversal,:);
-        reward = zeros(numTrials,1);
-        X = zeros(numTrials,2);
-        X(valves(reversal,:) == 1,1) = 1;
-        X(valves(reversal,:) == 2,2) = 1;
-        emptyCells = (cellfun(@isempty,rw));
-        for i = (1:numTrials)
-          if(emptyCells(i))
-             reward(i) = 0;
-          elseif(rw(i) == "Reward")
-             reward(i) = 1;
-          elseif(rw(i) == "Punish")
-             reward(i) = -.1;
-          else
-             %X(i,1) = 0;
-             %X(i,2) = 0;
-             reward(i) = 0;
-          end
-        end
-        param.s = lr(1,lrc);
-        param.q = 0.01;
-        param.std = 1;
-        param.lr = bestlr.value;
-        if(isempty(find(X(:,2))) == 0)
-            plus =2;
-        else
-            plus = 1;
-        end
-        model = kalmanRW(X,reward,param,0);    
-        rhat = zeros(n,1); % Predicted reward
-        pe = zeros(2,1); % prediction error
-        w = zeros(2,numTrials); % weights
-        Kn = zeros(2,numTrials); % Kalman gain
-        offDiag = zeros(numTrials,1); % off diagonal term in posterior weight covariance matrix
-        onDiag = zeros(2,numTrials); % on diagonal terms
-        output = zeros(1,numTrials);
-        for counter = 1:numTrials
-           rhat(counter) = model(counter).rhat;
-           pe(counter) = model(counter).dt;
-           w(:,counter) = model(counter).w0;
-           Kn(:,counter) = model(counter).K;
-           offDiag(counter) = model(counter).C(2,1); % covariance matrix is symmetric so bottom left or top right corner of 2,2 matrix are equivalent
-           onDiag(:,counter) = [model(counter).C(1,1); model(counter).C(2,2)];
-           output(1,counter) = w(plus,counter);
-        end
-        errorReversals(reversal,valves(reversal,:) == plus) = abs(output(valves(reversal,:) == plus) - mainData(reversal,valves(reversal,:) == plus));
-        models(reversal,:) = output;
-    end
-bestlr.graph = nanmean(models);
 %figure;
 %plot(lr,corrs);

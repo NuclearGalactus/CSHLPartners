@@ -71,6 +71,7 @@ p = polyfit(1:6,learningRates, 1);
 hold on;
 prediction = (p(1) * (1:6)) + p(2);
 errorbar(learningRates, abs(learningRates - prediction), 'Color', 'r');
+plot(1:6,prediction);
 hold off;
 xticks([1 2 3 4 5 6]);
 axis([1 6 0 1]);
