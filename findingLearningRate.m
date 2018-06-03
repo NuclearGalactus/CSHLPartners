@@ -77,7 +77,7 @@ for lrc = 1:length(lr)
         else
             plus = 1;
         end
-        model = kalmanRW(X,reward,param);    
+        model = kalmanRW(X,reward,param,0);    
         rhat = zeros(n,1); % Predicted reward
         pe = zeros(numTrials,1); % prediction error
         w = zeros(numCues,numTrials); % weights
@@ -144,9 +144,10 @@ hold on;
 %plot(-viewBefore:viewAfter, 1, 'Color','b');
 for reversal = 1:n
     notnans = ~isnan(mainData(reversal,:));
-    plot(find(notnans) - reversalPoint,smoothdata(mainData(reversal,notnans),'movmean',3),'Color','g', 'LineWidth', 0.5);
+   % plot(find(notnans) - reversalPoint,smoothdata(mainData(reversal,notnans),'movmean',3),'Color','g', 'LineWidth', 0.5);
 
 end
+
 title('Responses to New CS+ Odor');
 xlabel('Trials Relative to Reversal') % x-axis label
 ylabel('Lick Rate or Model Weights (Normalized)') % y-axis label
@@ -158,7 +159,7 @@ hold on;
 xlabel('Learning Rate') % x-axis label
 ylabel('Correlation')
 
-
+%{
 
 ensureFigure('Learning Rate Graph',1);
 subplot(2,1,1);
